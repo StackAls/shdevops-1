@@ -1,0 +1,22 @@
+# vagrant
+sudo apt install vagrant
+vagrant --version
+# packer
+wget https://hashicorp-releases.yandexcloud.net/packer/1.9.3/packer_1.9.3_linux_amd64.zip
+unzip packer_1.9.5_linux_amd64.zip -d ~/.local/bin/
+packer --version
+# add plugin for yandex
+packer init src/config.pkr.hcl
+# yc cli
+curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+# create profile
+yc init
+yc config list
+# update yc
+yc components update
+# select profile
+yc config profile list
+yc config profile activate <PROFILE-NAME>
+# settings for learning
+yc vpc network create --name net --labels my-label=netology --description "My network"
+yc vpc subnet create --name my-subnet-a --zone ru-central1-a --range 10.1.2.0/24 --network-name net --description "My subnet"
