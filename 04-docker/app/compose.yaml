@@ -1,0 +1,81 @@
+version: "3"
+
+# include:
+#   - path:
+#     - nl-shvirtd-example-python/proxy.yaml
+#     # project_directory: ./nl-shvirtd-example-python
+
+volumes:
+  db:
+
+# networks:
+#   backend:
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: 172.20.0.0/24
+#           gateway: 172.20.0.1
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.python
+    image: cr.yandex/crpe719t8lr4rpibo4r6/pyapp:1.0.0
+    env_file:
+      - .env
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_TABLE=${DB_TABLE}
+      - TZ='Europe/Moscow'
+    restart: always
+    networks:
+      backend:
+        ipv4_address: 172.20.0.5
+    # ports:
+    #   - "5000:5000"
+
+  db:
+    image: mysql:8
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - TZ='Europe/Moscow'
+    volumes:
+      - db:/var/lib/mysql
+    restart: always
+    networks:
+      backend:
+        ipv4_address: 172.20.0.10
+
+  reverse-proxy:
+    image: haproxy
+    restart: always
+    networks:
+        backend: {}
+    ports:
+    - "127.0.0.1:8080:8080"
+    volumes:
+    - ./nl-shvirtd-example-python/haproxy/reverse/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:rw 
+
+  ingress-proxy:
+    image: nginx:latest
+    restart: always
+    network_mode: host
+    volumes:
+    - ./nl-shvirtd-example-python/nginx/ingress/default.conf:/etc/nginx/conf.d/default.conf:rw
+    - ./nl-shvirtd-example-python/nginx/ingress/nginx.conf:/etc/nginx/nginx.conf:rw
+
+networks:
+  backend:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.20.0.0/24

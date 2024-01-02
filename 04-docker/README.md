@@ -13,12 +13,13 @@ DB_PASSWORD=very_strong
 DB_NAME=example
 DB_TABLE=requests
 ```
+
 Запуск web-приложения без использования docker (в venv.) (Mysql БД можно запустить в docker run).
 
 ```bash
 export $(grep -v '^#' .env | xargs -d '\n')
 
-docker run -p 3306:3306 -d --name mysql -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD -e MYSQL_DATABASE=$DB_NAME -eMYSQL_USER=$DB_USER -e MYSQL_PASSWORD=$DB_PASSWORD -e TZ='Europe/Moscow' mysql
+docker run -p 3306:3306 -d --name mysql -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD -e MYSQL_DATABASE=$DB_NAME -e MYSQL_USER=$DB_USER -e MYSQL_PASSWORD=$DB_PASSWORD -e TZ='Europe/Moscow' mysql
 
 docker ps
 CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                               NAMES
@@ -31,9 +32,9 @@ venv/bin/python3 nl-shvirtd-example-python/main.py
 Изменения в main.py для управления названием используемой таблицы через ENV переменную.
 
 ```python
-...
+#...
 db_table=os.environ.get('DB_TABLE')
-...
+#...
 # SQL-запрос для создания таблицы в БД
 create_table_query = f"""
 CREATE TABLE IF NOT EXISTS {db_database}.{db_table} (
@@ -42,19 +43,34 @@ request_date DATETIME,
 request_ip VARCHAR(255)
 )
 """
-...
+#...
 query = f"""INSERT INTO {db_table} (request_date, request_ip) VALUES (%s, %s)"""
-...
+#...
 ```
 
 ## Задача 2 (*)
-1. Создайте в yandex cloud container registry с именем "test" с помощью "yc tool" . [Инструкция](https://cloud.yandex.ru/ru/docs/container-registry/quickstart/?from=int-console-help)
-2. Настройте аутентификацию вашего локального docker в yandex container registry.
-3. Соберите и залейте в него образ с python приложением из задания №1.
-4. Просканируйте образ на уязвимости.
-5. В качестве ответа приложите отчет сканирования.
+
+```bash
+yc container registry create --name test
+
+done (1s)
+id: crpe719t8lr4rpibo4r6
+folder_id: b1g8b6f8d7c5bnb4bgan
+name: test
+status: ACTIVE
+created_at: "2024-01-02T14:07:39.084Z"
+
+yc container registry configure-docker
+
+docker build -t cr.yandex/crpe719t8lr4rpibo4r6/pyapp:1.0.0 -f Dockerfile.python .
+docker push cr.yandex/crpe719t8lr4rpibo4r6/pyapp:1.0.0
+
+```
+
+[Сканирование уязвимостей](./screen/Screenshot2024-01-02-172102.png)
 
 ## Задача 3
+
 1. Создайте файл ```compose.yaml```. Опишите в нем следующие сервисы: 
 
 - ```web```. Образ приложения должен ИЛИ собираться при запуске compose из файла ```Dockerfile.python``` ИЛИ скачиваться из yandex cloud container registry(из задание №2 со *). Контейнер должен работать в bridge-сети с названием ```backend``` и иметь фиксированный ipv4-адрес ```172.20.0.5```. Сервис должен всегда перезапускаться в случае ошибок.
