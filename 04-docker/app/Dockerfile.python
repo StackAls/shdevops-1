@@ -1,0 +1,10 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY nl-shvirtd-example-python/requirements.txt .
+RUN pip install -r requirements.txt
+COPY nl-shvirtd-example-python/ .
+ENV DB_HOST=${DB_HOST} DB_USER=${DB_USER} DB_PASSWORD=${DB_PASSWORD} DB_NAME=${DB_NAME} DB_TABLE=${DB_TABLE}
+
+CMD ["python3","/app/main.py"]
