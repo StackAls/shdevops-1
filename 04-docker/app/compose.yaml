@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.python
-    image: cr.yandex/crpe719t8lr4rpibo4r6/pyapp:1.0.0
+    image: cr.yandex/crpe719t8lr4rpibo4r6/pyapp:latest
     env_file:
       - .env
     environment:
@@ -32,6 +32,8 @@ services:
       - DB_TABLE=${DB_TABLE}
       - TZ='Europe/Moscow'
     restart: always
+    depends_on:
+      - db
     networks:
       backend:
         ipv4_address: 172.20.0.5
