@@ -190,16 +190,13 @@ a35098d0d732   nginx:latest                                  "/docker-entrypoint
 ![screen](./screen/Screenshot2024-01-11-104429.png)
 
 [Скрипт deploy.sh](./app/deploy.sh)
-[main.py](https://github.com/StackAls/nl-shvirtd-example-python/blob/main/main.py)
+
+[Исправленный main.py](https://github.com/StackAls/nl-shvirtd-example-python/blob/main/main.py)
+
 ![SQL - запрос](./screen/Screenshot2024-01-04-183739.png)
 ![docker ps -a](./screen/Screenshot2024-01-04-183942.png)
 
-
 ## Задача 5 (*)
-1. Напишите и задеплойте на вашу облачную ВМ bash скрипт, который произведет резервное копирование БД mysql в директорию "/opt/backup" с помощью запуска в сети "backend" контейнера из образа ```schnitzler/mysqldump``` при помощи ```docker run ...``` команды. Подсказка: "документация образа."
-2. Протестируйте ручной запуск
-3. Настройте выполнение скрипта раз в 1 минуту через cron, crontab или systemctl timer.
-4. Предоставьте скрипт, cron-task и скриншот с несколькими резервными копиями в "/opt/backup"
 
 На самом деле проще использовать следущий сценарий
 
@@ -258,6 +255,7 @@ cp terraform/bin/terraform ~/.local/bin/
 ```
 
 ![terraform](./screen/Screenshot2024-01-11-170136.png)
+
 ![screen](./screen/Screenshot2024-01-11-171706.png)
 
 ## Задача 6.1 (*)
@@ -293,4 +291,4 @@ Terraform v1.6.6
 on linux_amd64
 ```
 
-[screen](./screen/Screenshot2024-01-11-185145.png)
+![screen](./screen/Screenshot2024-01-11-185145.png)
