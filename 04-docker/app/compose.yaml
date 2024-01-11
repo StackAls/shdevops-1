@@ -1,20 +1,11 @@
 version: "3"
 
-# include:
-#   - path:
-#     - nl-shvirtd-example-python/proxy.yaml
-#     # project_directory: ./nl-shvirtd-example-python
+include:
+  - path:
+    - nl-shvirtd-example-python/proxy.yaml
 
 volumes:
   db:
-
-# networks:
-#   backend:
-#     driver: bridge
-#     ipam:
-#       config:
-#         - subnet: 172.20.0.0/24
-#           gateway: 172.20.0.1
 
 services:
   web:
@@ -37,13 +28,12 @@ services:
     networks:
       backend:
         ipv4_address: 172.20.0.5
-    # ports:
-    #   - "5000:5000"
 
   db:
     image: mysql:8
     env_file:
       - .env
+    command: --max_allowed_packet=256M
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME}
@@ -56,28 +46,3 @@ services:
     networks:
       backend:
         ipv4_address: 172.20.0.10
-
-  reverse-proxy:
-    image: haproxy
-    restart: always
-    networks:
-        backend: {}
-    ports:
-    - "127.0.0.1:8080:8080"
-    volumes:
-    - ./nl-shvirtd-example-python/haproxy/reverse/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:rw 
-
-  ingress-proxy:
-    image: nginx:latest
-    restart: always
-    network_mode: host
-    volumes:
-    - ./nl-shvirtd-example-python/nginx/ingress/default.conf:/etc/nginx/conf.d/default.conf:rw
-    - ./nl-shvirtd-example-python/nginx/ingress/nginx.conf:/etc/nginx/nginx.conf:rw
-
-networks:
-  backend:
-    driver: bridge
-    ipam:
-     config:
-       - subnet: 172.20.0.0/24
