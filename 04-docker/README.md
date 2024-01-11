@@ -67,7 +67,7 @@ docker push cr.yandex/crpe719t8lr4rpibo4r6/pyapp:1.0.0
 
 ```
 
-[Сканирование уязвимостей](./screen/Screenshot2024-01-02-172102.png)
+![Сканирование уязвимостей](./screen/Screenshot2024-01-02-172102.png)
 
 ## Задача 3
 
@@ -132,15 +132,15 @@ mysql> SELECT * from requests LIMIT 10;
 4 rows in set (0.00 sec)
 ```
 
-[screen](./screen/Screenshot2024-01-04-004328.png)
+![screen](./screen/Screenshot2024-01-04-004328.png)
 
 ## Задача 4
 
 [script CD](./app/deploy.sh)
 
-[screen](./screen/Screenshot2024-01-04-170438.png)
+![screen](./screen/Screenshot2024-01-04-170438.png)
 К сожалению - приложение выдает ошибку СУБД при массовых запросах.
-[screen](./screen/Screenshot2024-01-04-152001.png)
+![screen](./screen/Screenshot2024-01-04-152001.png)
 
 Настройка remote ssh context к серверу
 
@@ -189,8 +189,8 @@ a35098d0d732   nginx:latest                                  "/docker-entrypoint
 
 ![screen](./screen/Screenshot2024-01-11-104429.png)
 
-![Скрипт deploy.sh](./app/deploy.sh)
-![main.py](https://github.com/StackAls/nl-shvirtd-example-python/blob/main/main.py)
+[Скрипт deploy.sh](./app/deploy.sh)
+[main.py](https://github.com/StackAls/nl-shvirtd-example-python/blob/main/main.py)
 ![SQL - запрос](./screen/Screenshot2024-01-04-183739.png)
 ![docker ps -a](./screen/Screenshot2024-01-04-183942.png)
 
@@ -232,18 +232,65 @@ sudo crontab -e
 * * * * * /opt/shdevops-1/04-docker/app/backup-db.sh
 ```
 
-[screen to backup](./screen/Screenshot2024-01-11-151643.png)
+![screen to backup](./screen/Screenshot2024-01-11-151643.png)
 
 Всё же использование ``schnitzler/mysqldump`` удобно только в compose совместно с другими сервисами - не нужно делать cron задачи на хосте.
 
 ## Задача 6
-Скачайте docker образ ```hashicorp/terraform:latest``` и скопируйте бинарный файл ```/bin/terraform``` на свою локальную машину, используя dive и docker save.
-Предоставьте скриншоты  действий .
+
+```bash
+# Установка dive
+export DIVE_VERSION=$(curl -sL "https://api.github.com/repos/wagoodman/dive/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+curl -OL https://github.com/wagoodman/dive/releases/download/v${DIVE_VERSION}/dive_${DIVE_VERSION}_linux_amd64.deb
+sudo apt install ./dive_${DIVE_VERSION}_linux_amd64.deb
+
+# Скачиваем terraform
+docker pull hashicorp/terraform:latest
+# Ищем ID слоя с terraform (см. скрин)
+dive hashicorp/terraform
+# сохраняем имадж в tar
+docker save hashicorp/terraform -o terraform.tar
+# распаковка и сохранение terraform
+mkdir terraform
+tar -xf terraform.tar -C terraform/
+tar -xf terraform/7613a2e605147d80614fe79f7f2f3c1b5bf66d2d8ef82cf51a566597d0acc6c7/layer.tar -C terraform/
+cp terraform/bin/terraform ~/.local/bin/
+```
+
+![terraform](./screen/Screenshot2024-01-11-170136.png)
+![screen](./screen/Screenshot2024-01-11-171706.png)
 
 ## Задача 6.1 (*)
-Добейтесь аналогичного результата, используя познания  CMD, ENTRYPOINT и docker cp.  
-Предоставьте скриншоты  действий .
+
+```bash
+docker run -ti --rm --name terraform --entrypoint "/bin/sh" hashicorp/terraform:latest
+/ #
+
+# в другом терминале
+docker cp terraform:/bin/terraform ~/terraform
+Successfully copied 81MB to /home/bugrov/terraform
+```
+![screen](./screen/Screenshot2024-01-11-180337.png)
+
+Ну или в одну строчку
+
+```bash
+docker run --rm --name terraform --entrypoint "/bin/sh" -v $PWD/terraform:/app hashicorp/terraform:latest -c "cp /bin/terraform /app"
+```
+
+![screen](./screen/Screenshot2024-01-11-174956.png)
 
 ## Задача 6.2 (**)
-Предложите способ извлечь файл из контейнера, используя только команду docker build и любой Dockerfile.  
-Предоставьте скриншоты  действий .
+
+[Dockerfile](Dockerfile.terraform)
+
+```bash
+docker build -f shdevops-1/04-docker/Dockerfile.terraform --output type=local,dest=out .
+
+out/terraform -v
+
+Terraform v1.6.6
+on linux_amd64
+```
+
+[screen](./screen/Screenshot2024-01-11-185145.png)

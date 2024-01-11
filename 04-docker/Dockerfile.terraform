@@ -1,0 +1,5 @@
+FROM hashicorp/terraform:latest AS build-stage
+RUN terraform --help
+
+FROM scratch AS export-stage
+COPY --from=build-stage /bin/terraform /
